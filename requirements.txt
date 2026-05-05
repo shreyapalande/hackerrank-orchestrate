@@ -1,0 +1,7 @@
+google-genai
+pyyaml
+python-dotenv
+pandas
+beautifulsoup4
+chromadb
+sentence-transformers

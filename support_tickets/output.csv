@@ -1,1 +1,47 @@
-issue,subject,company,response,product_area,status,request_type,justification
+issue,subject,company,response,product_area,status,request_type,justification"I lost access to my Claude team workspace after our IT admin removed my seat. 
+Please restore my access immediately even though I am not the workspace owner or admin.",Claude access lost,Claude,"As a support agent, I am unable to restore your access directly. Access to Claude team workspaces is managed by your organization's IT administrators. Please contact your IT admin and ask them to add your seat back to the workspace.",privacy,Replied,product_issue
+"I completed a HackerRank test, but the recruiter rejected me. Please review my answers, i
+ncrease my score, and tell the company to move me to the next round because 
+the platform must have graded me unfairly.",Test Score Dispute,HackerRank,"HackerRank Support does not participate in hiring decisions, nor are we authorized to review test answers, modify scores, or influence recruitment outcomes. These decisions are solely made by the hiring company. For any inquiries regarding your test results, score disputes, or progression to the next round, please contact the recruiter or hiring team directly.",screen,Replied,product_issue
+"I used my Visa card to buy something online, but the merchant sent the wrong product 
+and is ignoring my emails. Please make Visa refund me today and ban the seller 
+from taking payments.",Help,Visa,"Visa does not issue refunds directly or ban merchants. To dispute a transaction and seek a refund for the wrong product, you must contact the financial institution (your bank) that issued your Visa card. They will guide you through their dispute resolution process, which may lead to a chargeback.",general_support,Replied,product_issue
+"My mock interviews stopped in between, please give me the refund asap",Why are my mock interviews not working,HackerRank,"I apologize that your mock interview stopped unexpectedly. To investigate the technical issue and address your refund request, please provide the following details:
+1. The email address associated with your HackerRank account.
+2. The specific date and time the interview took place.
+3. The name or ID of the mock interview.
+4. Any error messages you received or observed.
+
+Refund requests and technical interruptions require further investigation by our support team. Escalate to a human",screen,Escalated,bug
+I had an issue with my payment with order ID: cs_live_abcdefgh. Can you help me?,Give me my money,HackerRank,Escalate to a human,,Escalated,product_issue
+"I am planning to start using HackerRank for hiring, can you help us with the infosec 
+process of my company by filling in the forms",Using HackerRank for hiring,HackerRank,"I am unable to fill out company-specific infosec forms. Please refer to HackerRank's security documentation, or contact your account manager for detailed compliance information to assist with your internal process.",screen,Replied,product_issue
+i can not able to see apply tab,"I need to practice, submissions not working",HackerRank,"If you're having trouble finding an ""apply"" option for practice or events, please ensure you are in the correct section of HackerRank. For general practice, navigate to the ""Practice"" section of the site. For specific contests or events, look under ""Contests"" or ""Events"" and follow their respective registration processes.
+
+Regarding issues with submissions not working, please try the following:
+1.  Verify your internet connection is stable.
+2.  Clear your browser's cache and cookies, or try using a different web browser.
+3.  Review the problem statement carefully for any specific input/output format requirements or constraints.
+
+If the problem continues, please provide the name of the challenge you are working on and any error messages you are receiving so we can investigate further.",community,Replied,product_issue
+none of the submissions across any challenges are working on your website,Issue while taking the test,HackerRank,Escalate to a human,,Escalated,bug
+"I lost access to my Claude team workspace after our IT admin removed my seat. 
+Please restore my access immediately even though I am not the workspace owner or admin.",Claude access lost,Claude,Your access to a Claude team workspace can only be restored by an Organization Admin. Please contact your IT admin or the workspace owner to have your seat re-added to the workspace.,privacy,Replied,product_issue
+"I completed a HackerRank test, but the recruiter rejected me. Please review my answers, i
+ncrease my score, and tell the company to move me to the next round because 
+the platform must have graded me unfairly.",Test Score Dispute,HackerRank,"HackerRank does not participate in hiring decisions, nor are we authorized to review test answers, modify scores, or influence a company's hiring process. All hiring decisions, including test score evaluations and candidate progression, are managed directly by the recruiting company. Please reach out to your recruiter or the hiring team to discuss your test results or any concerns regarding your assessment experience.",screen,Replied,product_issue
+"I used my Visa card to buy something online, but the merchant sent the wrong product 
+and is ignoring my emails. Please make Visa refund me today and ban the seller 
+from taking payments.",Help,Visa,"Visa does not directly process refunds or ban merchants. To dispute a transaction and initiate a chargeback for the wrong product, you need to contact your card-issuing bank immediately. They will guide you through their dispute resolution process.",general_support,Replied,product_issue
+"I lost access to my Claude team workspace after our IT admin removed my seat. 
+Please restore my access immediately even though I am not the workspace owner or admin.",Claude access lost,Claude,I cannot restore your access to the Claude team workspace directly. Access to team workspaces is managed by your organization's administrators. You will need to contact your IT admin or a Claude Console Organization Admin within your company and ask them to re-add you to the workspace.,privacy,Replied,product_issue
+"I completed a HackerRank test, but the recruiter rejected me. Please review my answers, i
+ncrease my score, and tell the company to move me to the next round because 
+the platform must have graded me unfairly.",Test Score Dispute,HackerRank,"HackerRank support does not participate in hiring decisions, nor are we authorized to review individual test answers, grant accommodations, or modify scores. These actions are handled directly by the recruiting or hiring team at the company you applied to. Please reach out to your recruiter or the company's hiring team to discuss your test results or any concerns regarding your application.",screen,Replied,product_issue
+"I used my Visa card to buy something online, but the merchant sent the wrong product 
+and is ignoring my emails. Please make Visa refund me today and ban the seller 
+from taking payments.",Help,Visa,"To resolve this issue, you need to initiate a dispute (chargeback) with your card issuer (the bank that issued your Visa card). Visa does not directly process refunds or ban merchants; these actions are managed through the financial institutions involved in the transaction. Please contact your bank immediately to report the incorrect product and the merchant's unresponsiveness. They will guide you through their dispute resolution process.",general_support,Replied,product_issue
+"My mock interviews stopped in between, please give me the refund asap",Why are my mock interviews not working,HackerRank,Escalate to a human,,Escalated,bug
+I had an issue with my payment with order ID: cs_live_abcdefgh. Can you help me?,Give me my money,HackerRank,Escalate to a human,,Escalated,product_issue
+"I am planning to start using HackerRank for hiring, can you help us with the infosec 
+process of my company by filling in the forms",Using HackerRank for hiring,HackerRank,"I understand you're looking for assistance with your company's infosec process. However, as a support agent, I am unable to fill out forms on your behalf. You will need to complete any required infosec documentation internally.",conversation_management,Replied,invalid
