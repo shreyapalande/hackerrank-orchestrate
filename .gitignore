@@ -4,6 +4,9 @@
 *.pem
 *.key
 
+# data
+data/
+
 # deps
 node_modules/
 .pnpm-store/
@@ -24,6 +27,7 @@ build/
 .DS_Store
 .idea/
 .vscode/
+.claude/
 Thumbs.db
 
 # parsed json outputs
