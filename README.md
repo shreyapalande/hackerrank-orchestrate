@@ -188,6 +188,21 @@ A single LLM call uses tool calling to return a guaranteed-valid JSON object wit
 
 ---
 
+## Demo
+
+Interactive mode in action across three domains:
+
+**HackerRank — Proctoring review**
+![HackerRank proctoring demo](demo/Screenshot%202026-05-14%20114904.png)
+
+**Claude — Training data opt-out**
+![Claude privacy demo](demo/Screenshot%202026-05-14%20115029.png)
+
+**Visa — Lost card abroad**
+![Visa lost card demo](demo/Screenshot%202026-05-14%20115139.png)
+
+---
+
 ## Knowledge Base Stats
 
 | Company | Articles | Chunks | Avg chunk |
