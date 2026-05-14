@@ -110,7 +110,8 @@ def parse_visa_docs(limit: int | None = None) -> list[dict]:
 
 if __name__ == "__main__":
     docs = parse_visa_docs()
-    out_path = Path(__file__).parent / "visa_docs.json"
+    out_path = Path(__file__).parent / "parsed_files" / "visa_docs.json"
+    out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(docs, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nParsed {len(docs)} articles → {out_path}")
     print("\n--- Sample (first doc) ---")

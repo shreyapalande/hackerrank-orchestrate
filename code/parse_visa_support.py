@@ -113,7 +113,8 @@ def parse_visa_support() -> list[dict]:
 
 if __name__ == "__main__":
     entries = parse_visa_support()
-    out_path = Path(__file__).parent / "visa_support.json"
+    out_path = Path(__file__).parent / "parsed_files" / "visa_support.json"
+    out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(entries, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Parsed {len(entries)} entries → {out_path}")
     for e in entries:

@@ -26,8 +26,26 @@ build/
 .vscode/
 Thumbs.db
 
-# local data / caches the participant may create
-data/index/
-data/embeddings/
+# parsed json outputs
+code/parsed_files/
+code/*.json
+
+# vector db
+chroma_db/
 *.sqlite
 *.db
+faiss_index/
+
+# logs
+*.log
+code/log.txt
+
+# os
+*.DS_Store
+Thumbs.db
+
+# markdowns
+AGENTS.md
+CLAUDE.md
+evaluation_criteria.md
+problem_statement.md

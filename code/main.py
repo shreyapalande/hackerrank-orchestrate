@@ -11,6 +11,7 @@ import argparse
 import csv
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT_DIR    = Path(__file__).parent.parent
@@ -91,22 +92,11 @@ def ensure_db():
     print("Vector DB ready.\n")
 
 
-# ── output-csv helpers ─────────────────────────────────────────────────────────
-
-def _load_done(output_path: Path) -> set:
-    if not output_path.exists():
-        return set()
-    done = set()
-    with open(output_path, newline="", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            key = (
-                row.get("Issue", "").strip(),
-                row.get("Subject", "").strip(),
-                row.get("Company", "").strip(),
-            )
-            if any(key):
-                done.add(key)
-    return done
+# ── Groq free-tier limits for llama-3.3-70b-versatile ─────────────────────────
+_RPM_LIMIT = 30          # requests per minute  → 2 s minimum gap
+_TPM_LIMIT = 12_000      # tokens per minute
+_TPM_BUFFER = 0.85       # start sleeping at 85 % of limit
+_MIN_GAP = 60.0 / _RPM_LIMIT          # 2 s between requests
 
 
 # ── commands ───────────────────────────────────────────────────────────────────
@@ -114,36 +104,66 @@ def _load_done(output_path: Path) -> set:
 def cmd_test(args):
     ensure_db()
     from agent import resolve
+    from openai import RateLimitError
 
     with open(TICKETS_CSV, newline="", encoding="utf-8") as f:
         tickets = list(csv.DictReader(f))
 
-    done = _load_done(OUTPUT_CSV)
-    needs_header = not OUTPUT_CSV.exists() or OUTPUT_CSV.stat().st_size == 0
+    total = len(tickets)
+    print(f"Processing {total} tickets → {OUTPUT_CSV}")
+    print(f"Rate limits: {_RPM_LIMIT} RPM · {_TPM_LIMIT} TPM\n")
 
-    total   = len(tickets)
-    skipped = 0
+    # rolling 60-second token window
+    win_start  = time.monotonic()
+    win_tokens = 0
+    day_tokens = 0
 
-    out_f  = open(OUTPUT_CSV, "a", newline="", encoding="utf-8")
+    out_f  = open(OUTPUT_CSV, "w", newline="", encoding="utf-8")
     writer = csv.DictWriter(out_f, fieldnames=OUTPUT_FIELDS)
-    if needs_header:
-        writer.writeheader()
-        out_f.flush()
+    writer.writeheader()
+    out_f.flush()
 
     try:
         for i, ticket in enumerate(tickets, 1):
             issue   = ticket.get("Issue", "").strip()
             subject = ticket.get("Subject", "").strip()
             company = ticket.get("Company", "").strip()
-            key = (issue, subject, company)
 
-            if key in done:
-                skipped += 1
-                print(f"  [{i:02d}/{total}] SKIP: {company} | {(subject or issue)[:50]}")
-                continue
+            # ── TPM guard: sleep until window resets if near limit ────────────
+            if win_tokens >= _TPM_LIMIT * _TPM_BUFFER:
+                elapsed  = time.monotonic() - win_start
+                sleep_for = max(60.0 - elapsed + 1.0, 1.0)
+                print(f"  [TPM {win_tokens}/{_TPM_LIMIT}] sleeping {sleep_for:.0f}s for window reset ...", flush=True)
+                time.sleep(sleep_for)
+                win_start  = time.monotonic()
+                win_tokens = 0
+
+            # Reset window counter every 60 s
+            if time.monotonic() - win_start >= 60.0:
+                win_start  = time.monotonic()
+                win_tokens = 0
 
             print(f"  [{i:02d}/{total}] {company} | {(subject or issue)[:50]}", end=" ... ", flush=True)
-            result = resolve(issue, subject, company)
+
+            # ── API call with retry on 429 ────────────────────────────────────
+            t0 = time.monotonic()
+            for attempt in range(1, 4):
+                try:
+                    result = resolve(issue, subject, company)
+                    break
+                except RateLimitError:
+                    if attempt == 3:
+                        raise
+                    wait = 30 * attempt
+                    print(f"\n  [429] rate limited — waiting {wait}s (attempt {attempt}/3) ...", flush=True)
+                    time.sleep(wait)
+                    win_start  = time.monotonic()
+                    win_tokens = 0
+
+            # ── token accounting ──────────────────────────────────────────────
+            used = result.pop("_tokens", 0)
+            win_tokens += used
+            day_tokens += used
 
             writer.writerow({
                 "Issue":        issue,
@@ -155,13 +175,19 @@ def cmd_test(args):
                 "Request Type": result["Request Type"],
             })
             out_f.flush()
-            done.add(key)
-            print(f"{result['Status']} / {result['Request Type']}")
+            print(f"{result['Status']} / {result['Request Type']}  (tokens: {used}, win: {win_tokens}, day: {day_tokens})")
+
+            # ── RPM guard: enforce minimum gap between requests ────────────────
+            elapsed = time.monotonic() - t0
+            gap = _MIN_GAP - elapsed
+            if gap > 0:
+                time.sleep(gap)
+
     finally:
         out_f.close()
 
-    processed = total - skipped
-    print(f"\nDone. {processed} processed, {skipped} skipped. Output: {OUTPUT_CSV}")
+    print(f"\nDone. {total} tickets written to {OUTPUT_CSV}")
+    print(f"Total tokens used today: {day_tokens} / 100,000")
 
 
 def cmd_ticket(args):
@@ -182,6 +208,45 @@ def cmd_ticket(args):
     print(f"Product Area : {result['Product Area']}")
     print(f"Request Type : {result['Request Type']}")
     print(f"Response:\n{result['Response']}")
+
+
+def cmd_interactive(_args):
+    ensure_db()
+    from agent import resolve
+
+    print("Interactive mode — press Ctrl-C to quit.\n")
+
+    while True:
+        try:
+            company = input("Company  (HackerRank / Claude / Visa / leave blank): ").strip()
+            subject = input("Subject  (optional, press Enter to skip)         : ").strip()
+            print("Issue    (press Enter twice when done)            :")
+            lines = []
+            while True:
+                line = input()
+                if line == "" and lines:
+                    break
+                lines.append(line)
+            issue = "\n".join(lines).strip()
+
+            if not issue:
+                print("  [empty issue, skipping]\n")
+                continue
+
+            print()
+            result = resolve(issue, subject, company)
+
+            print(f"  Status       : {result['Status']}")
+            print(f"  Product Area : {result['Product Area']}")
+            print(f"  Request Type : {result['Request Type']}")
+            print(f"  Response:\n")
+            for ln in result["Response"].splitlines():
+                print(f"    {ln}")
+            print()
+
+        except (KeyboardInterrupt, EOFError):
+            print("\nBye.")
+            break
 
 
 def cmd_build_db(args):
@@ -207,7 +272,8 @@ def main():
     p_ticket.add_argument("--subject", default="",     help="Subject line (optional)")
     p_ticket.add_argument("--company", default="",     help="Company name (optional)")
 
-    sub.add_parser("build-db", help="(Re)build all parser JSONs and the ChromaDB index")
+    sub.add_parser("build-db",    help="(Re)build all parser JSONs and the ChromaDB index")
+    sub.add_parser("interactive", help="Prompt for issue/subject/company and resolve interactively")
 
     args = parser.parse_args()
 
@@ -217,6 +283,8 @@ def main():
         cmd_ticket(args)
     elif args.command == "build-db":
         cmd_build_db(args)
+    elif args.command == "interactive":
+        cmd_interactive(args)
 
 
 if __name__ == "__main__":

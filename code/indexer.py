@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -7,37 +8,60 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 # ── paths ──────────────────────────────────────────────────────────────────────
-CODE_DIR   = Path(__file__).parent
-ROOT_DIR   = CODE_DIR.parent
-CHROMA_DIR = ROOT_DIR / "chroma_db"
+CODE_DIR    = Path(__file__).parent
+ROOT_DIR    = CODE_DIR.parent
+CHROMA_DIR  = ROOT_DIR / "chroma_db"
+PARSED_DIR  = CODE_DIR / "parsed_files"
 
 JSON_FILES = {
     "docs":    [
-        CODE_DIR / "claude_docs.json",
-        CODE_DIR / "hackerrank_docs.json",
-        CODE_DIR / "visa_docs.json",
+        PARSED_DIR / "claude_docs.json",
+        PARSED_DIR / "hackerrank_docs.json",
+        PARSED_DIR / "visa_docs.json",
     ],
-    "qa": CODE_DIR / "visa_support.json",
+    "qa": PARSED_DIR / "visa_support.json",
 }
 
-BATCH_SIZE   = 64
-MIN_WORDS    = 30
-MAX_WORDS    = 400
-OVERLAP      = 50
+BATCH_SIZE       = 64
+MIN_WORDS        = 30
+MAX_WORDS        = 400
+SENTENCE_OVERLAP = 2   # sentences carried into next chunk for context
+MAX_TITLE_WORDS  = 15  # titles longer than this are not prepended
 
 
 # ── chunking ───────────────────────────────────────────────────────────────────
-def chunk_text(text: str, max_words=MAX_WORDS, overlap=OVERLAP) -> list[str]:
-    words = text.split()
-    if len(words) <= max_words:
-        return [text]
-    chunks, start = [], 0
-    while start < len(words):
-        end = min(start + max_words, len(words))
-        chunks.append(" ".join(words[start:end]))
-        if end == len(words):
-            break
-        start = end - overlap
+def _split_sentences(text: str) -> list[str]:
+    """Split on sentence-ending punctuation (.!?) followed by whitespace."""
+    parts = re.split(r'(?<=[.!?])\s+', text.strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
+def chunk_text(text: str, max_words: int = MAX_WORDS) -> list[str]:
+    """
+    Sentence-aware chunking: accumulate sentences up to max_words, then start
+    a new chunk carrying the last SENTENCE_OVERLAP sentences for context.
+    Never cuts mid-sentence.
+    """
+    sentences = _split_sentences(text)
+    if not sentences:
+        return []
+
+    chunks: list[str] = []
+    current: list[str] = []
+    current_wc = 0
+
+    for sent in sentences:
+        sw = len(sent.split())
+        if current and current_wc + sw > max_words:
+            chunks.append(" ".join(current))
+            current = current[-SENTENCE_OVERLAP:]
+            current_wc = sum(len(s.split()) for s in current)
+        current.append(sent)
+        current_wc += sw
+
+    if current:
+        chunks.append(" ".join(current))
+
     return chunks
 
 
@@ -79,13 +103,15 @@ def load_docs() -> list[dict]:
 def build_chunks(records: list[dict]) -> list[dict]:
     chunks = []
     for doc in records:
+        title = doc["title"] or ""
+        prefix = f"{title}. " if title and len(title.split()) <= MAX_TITLE_WORDS else ""
         text_chunks = chunk_text(doc["content"])
         for i, chunk in enumerate(text_chunks):
             if len(chunk.split()) < MIN_WORDS:
                 continue
             chunks.append({
                 "chunk_id": f"{doc['doc_id']}_chunk_{i}",
-                "text":     chunk,
+                "text":     prefix + chunk,
                 "metadata": {
                     "doc_id":   doc["doc_id"],
                     "company":  doc["company"]  or "",
