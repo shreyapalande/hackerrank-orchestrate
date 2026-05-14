@@ -4,9 +4,6 @@
 *.pem
 *.key
 
-# data
-data/
-
 # deps
 node_modules/
 .pnpm-store/
@@ -48,6 +45,6 @@ code/log.txt
 *.DS_Store
 Thumbs.db
 
-# markdowns (keep only README.md)
-*.md
+# root-level markdowns (keep only README.md)
+/*.md
 !README.md
