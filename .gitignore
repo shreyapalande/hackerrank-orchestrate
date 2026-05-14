@@ -48,8 +48,6 @@ code/log.txt
 *.DS_Store
 Thumbs.db
 
-# markdowns
-AGENTS.md
-CLAUDE.md
-evaluation_criteria.md
-problem_statement.md
+# markdowns (keep only README.md)
+*.md
+!README.md

@@ -2,7 +2,7 @@
 
 An AI agent that automatically triages and resolves customer support tickets across three product domains — **HackerRank**, **Claude (Anthropic)**, and **Visa** — using RAG (Retrieval-Augmented Generation) over a local knowledge base.
 
-Built for the HackerRank Orchestrate Hackathon (May 2026).
+Built for the [HackerRank Orchestrate Hackathon (May 2026)](https://github.com/interviewstreet/hackerrank-orchestrate-may26).
 
 ---
 
